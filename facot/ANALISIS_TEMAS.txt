@@ -1,0 +1,31 @@
+
+📁 TEMAS ENCONTRADOS:
+  • theme_dark.json
+    Ruta: D:\Dropbox\PROGAIN\FACOT_4.0\FACOT\themes\theme_dark.json
+    ID: dark
+    Nombre: Dark Focus
+    Background: #1E1E2E
+    Primary: #89B4FA
+
+  • theme_light.json
+    Ruta: D:\Dropbox\PROGAIN\FACOT_4.0\FACOT\themes\theme_light.json
+    ID: light
+    Nombre: Corporate Light
+    Background: #F1F5F9
+    Primary: #2563EB
+
+  • theme_midnight.json
+    Ruta: D:\Dropbox\PROGAIN\FACOT_4.0\FACOT\themes\theme_midnight.json
+    ID: midnight
+    Nombre: Modern Midnight
+    Background: #020617
+    Primary: #38BDF8
+
+
+⚙️ ARCHIVOS DE CONFIGURACIÓN:
+  • facot_config.json
+    Ruta:  D:\Dropbox\PROGAIN\FACOT_4.0\FACOT\facot_config.json
+    Tema configurado: "light"
+
+
+⚠ No se pudo descompilar main.py para análisis detallado

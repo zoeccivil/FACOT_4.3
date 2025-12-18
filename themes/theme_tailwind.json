@@ -1,0 +1,23 @@
+{
+  "id": "tailwind",
+  "name": "Tailwind Modern",
+  "palette": {
+    "background": "#f8fafc",
+    "surface": "#ffffff",
+    "surface_alt": "#f1f5f9",
+    "foreground": "#1e293b",
+    "foreground_muted": "#64748b",
+    "primary": "#4f46e5",
+    "primary_hover": "#4338ca",
+    "primary_text": "#ffffff",
+    "border": "#e2e8f0",
+    "table_header_bg": "#f8fafc",
+    "table_grid":  "#e2e8f0",
+    "selection_bg": "#ddd6fe",
+    "selection_text": "#4c1d95",
+    "sidebar_bg": "#0f172a",
+    "sidebar_text": "#94a3b8",
+    "sidebar_text_active": "#ffffff",
+    "sidebar_hover": "#1e293b"
+  }
+}

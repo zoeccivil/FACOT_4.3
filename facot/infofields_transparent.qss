@@ -1,0 +1,37 @@
+/* Make designated info/input fields transparent and borderless so they blend with the group box surface.
+   This file is appended to the project's base QSS template by utils/theme_manager.generate_stylesheet.
+   It can contain tokens like {{foreground}} which will be substituted from the theme JSON.
+*/
+
+QLineEdit#infoField,
+QDateEdit#infoField,
+QComboBox#infoField {
+    background-color: transparent;
+    border: none;
+    color: {{foreground}};
+    padding: 4px 6px;
+}
+
+/* Smaller informational field */
+QLineEdit#infoFieldSmall {
+    background-color: transparent;
+    border: none;
+    color: {{foreground}};
+    padding: 4px 6px;
+    min-width: 120px;
+}
+
+/* Keep subtle focus for accessibility */
+QLineEdit#infoField:focus,
+QDateEdit#infoField:focus,
+QComboBox#infoField:focus,
+QLineEdit#infoFieldSmall:focus {
+    outline: 1px solid rgba(0,0,0,0.06); /* adjust for light/dark variants if needed */
+    border-radius: 4px;
+}
+
+/* Ensure QGroupBox background shows through */
+QGroupBox QWidget#infoField,
+QGroupBox QWidget#infoFieldSmall {
+    background-color: transparent;
+}

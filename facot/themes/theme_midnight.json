@@ -1,0 +1,19 @@
+{
+  "id": "midnight",
+  "name": "Modern Midnight",
+  "palette": {
+    "background": "#020617",
+    "surface": "#0F172A",
+    "surface_alt": "#1E293B",
+    "foreground": "#F8FAFC",
+    "foreground_muted": "#94A3B8",
+    "primary": "#38BDF8",
+    "primary_hover": "#0EA5E9",
+    "primary_text": "#0F172A",
+    "border": "#1E293B",
+    "table_header_bg": "#020617",
+    "table_grid": "#1E293B",
+    "selection_bg": "#0C4A6E",
+    "selection_text": "#E0F2FE"
+  }
+}

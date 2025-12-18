@@ -1,0 +1,19 @@
+{
+  "id": "light",
+  "name": "Corporate Light",
+  "palette": {
+    "background": "#F1F5F9",
+    "surface": "#FFFFFF",
+    "surface_alt": "#F8FAFC",
+    "foreground": "#0F172A",
+    "foreground_muted": "#64748B",
+    "primary": "#2563EB",
+    "primary_hover": "#1D4ED8",
+    "primary_text": "#FFFFFF",
+    "border": "#E2E8F0",
+    "table_header_bg": "#F8FAFC",
+    "table_grid": "#E2E8F0",
+    "selection_bg": "#DBEAFE",
+    "selection_text": "#1E40AF"
+  }
+}

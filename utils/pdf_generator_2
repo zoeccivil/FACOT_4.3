@@ -1,0 +1,457 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+pdf_generator_moderno.py
+Generador PDF moderno con formato similar al HTML,
+bordes redondeados, colores dinámicos y layout profesional.
+
+Compatible con:
+- payload["COMPANY"]
+- payload["TEMPLATE"]
+- payload["QUOTATION"] o payload["INVOICE"]
+
+"""
+
+from __future__ import annotations
+
+import os
+from typing import Dict, Any, Optional
+from datetime import datetime
+
+from reportlab.lib import colors
+from reportlab.lib.enums import TA_CENTER, TA_RIGHT
+from reportlab.lib.units import cm, mm
+from reportlab.lib.pagesizes import LETTER
+from reportlab.platypus import (
+    SimpleDocTemplate, Paragraph, Spacer,
+    Table, TableStyle, Image, Flowable
+)
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+
+# ---------------------------------------------------------
+# BORDER RADIUS FLOWABLE
+# ---------------------------------------------------------
+
+class RoundRect(Flowable):
+    """
+    Dibuja un rectángulo con esquinas redondeadas.
+    Útil para cajas decorativas dentro del PDF.
+    """
+    def __init__(self, width, height, radius=8, stroke=1, fill=0, color=colors.black):
+        Flowable.__init__(self)
+        self.width = width
+        self.height = height
+        self.radius = radius
+        self.stroke = stroke
+        self.fill = fill
+        self.color = color
+
+    def draw(self):
+        canv = self.canv
+        canv.setStrokeColor(self.color)
+        canv.setLineWidth(self.stroke)
+        canv.roundRect(0, 0, self.width, self.height, self.radius, stroke=1, fill=self.fill)
+
+
+# ---------------------------------------------------------
+# UTILIDADES
+# ---------------------------------------------------------
+
+def _to_local_path(p: str) -> str:
+    if not p:
+        return ""
+    return p.replace("file:///", "").replace("file://", "")
+
+def _parse_date(v: Optional[str]) -> str:
+    if not v:
+        return ""
+    try:
+        dt = datetime.fromisoformat(v.replace("/", "-"))
+        return dt.strftime("%d/%m/%Y")
+    except:
+        return v
+
+def _normalize_primary_color(company: dict, template: dict) -> colors.Color:
+    """
+    Opción B:
+    COMPANY.primary_color → TEMPLATE.primary_color → "#1f4e79"
+    """
+    hex_color = (
+        company.get("primary_color")
+        or template.get("primary_color")
+        or "#1f4e79"
+    )
+    return colors.HexColor(hex_color)
+
+
+# ---------------------------------------------------------
+# ESTILOS GLOBALS
+# ---------------------------------------------------------
+
+class ModernStyles:
+    def __init__(self, primary_color: colors.Color):
+        self.primary = primary_color
+        self.secondary = colors.HexColor("#F5F5F5")
+        self.text = colors.HexColor("#333333")
+        self.muted = colors.HexColor("#777777")
+
+        self.title = ParagraphStyle(
+            "Title",
+            fontSize=22,
+            leading=26,
+            fontName="Helvetica-Bold",
+            textColor=self.primary,
+            alignment=TA_RIGHT
+        )
+
+        self.company_name = ParagraphStyle(
+            "CompanyName",
+            fontSize=14,
+            fontName="Helvetica-Bold",
+            textColor=self.primary,
+        )
+
+        self.meta_label = ParagraphStyle(
+            "MetaLabel",
+            fontSize=9,
+            fontName="Helvetica-Bold",
+            textColor=self.muted,
+        )
+
+        self.meta_value = ParagraphStyle(
+            "MetaValue",
+            fontSize=10,
+            fontName="Helvetica-Bold",
+            textColor=self.text,
+            alignment=TA_RIGHT
+        )
+
+        self.client_label = ParagraphStyle(
+            "ClientLabel",
+            fontSize=8,
+            fontName="Helvetica-Bold",
+            textColor=self.muted,
+        )
+
+        self.client_name = ParagraphStyle(
+            "ClientName",
+            fontSize=12,
+            fontName="Helvetica-Bold",
+            textColor=self.text,
+        )
+
+        self.table_header = ParagraphStyle(
+            "TblHeader",
+            fontSize=9,
+            fontName="Helvetica-Bold",
+            textColor=colors.white,
+            alignment=TA_CENTER
+        )
+
+        self.table_cell = ParagraphStyle(
+            "TblCell",
+            fontSize=9,
+            textColor=self.text,
+        )
+
+        self.table_cell_right = ParagraphStyle(
+            "TblCellRight",
+            fontSize=9,
+            textColor=self.text,
+            alignment=TA_RIGHT,
+        )
+
+
+# ---------------------------------------------------------
+# HEADER (LOGO + EMPRESA + META BOX)
+# ---------------------------------------------------------
+
+def build_header(story, comp, doc, styles: ModernStyles, page_width):
+    logo_path = _to_local_path(comp.get("logo_path", ""))
+    img = None
+
+    if logo_path and os.path.exists(logo_path):
+        try:
+            img = Image(logo_path, width=4*cm, height=2.5*cm)
+        except:
+            img = None
+
+    company_info = [
+        Paragraph(comp.get("name","").upper(), styles.company_name),
+        Paragraph(f'RNC: {comp.get("rnc","")}', styles.meta_label),
+        Paragraph(comp.get("address",""), styles.meta_label),
+        Paragraph(comp.get("phone",""), styles.meta_label),
+        Paragraph(comp.get("email",""), styles.meta_label),
+    ]
+
+    # Título (FACTURA / COTIZACIÓN)
+    doc_title = "FACTURA" if doc.get("ncf") else "COTIZACIÓN"
+    title = Paragraph(doc_title.upper(), styles.title)
+
+    # Caja de metadatos
+    num = doc.get("display_number") or doc.get("number") or "N/A"
+    ncf = doc.get("ncf")
+    fecha = _parse_date(doc.get("date"))
+    vence = _parse_date(doc.get("due_date"))
+
+    meta_data = [
+        [Paragraph("NÚMERO:", styles.meta_label), Paragraph(num, styles.meta_value)],
+        [Paragraph("FECHA:", styles.meta_label), Paragraph(fecha, styles.meta_value)],
+    ]
+    if ncf:
+        meta_data.insert(1, [Paragraph("NCF:", styles.meta_label), Paragraph(ncf, styles.meta_value)])
+    if vence:
+        meta_data.append([Paragraph("VENCE:", styles.meta_label), Paragraph(vence, styles.meta_value)])
+
+    meta_table = Table(meta_data, colWidths=[3*cm, 4*cm])
+    meta_table.setStyle(TableStyle([
+        ("BACKGROUND", (0,0), (-1,-1), styles.secondary),
+        ("BOX", (0,0), (-1,-1), 0.5, styles.muted),
+        ("PADDING", (0,0), (-1,-1), 6),
+    ]))
+
+    row = [
+        [img if img else "",
+         company_info,
+         [title, Spacer(1,4), meta_table]]
+    ]
+
+    table = Table(
+        row,
+        colWidths=[5*cm, 8*cm, page_width - (5*cm + 8*cm)],
+    )
+    table.setStyle(TableStyle([
+        ("VALIGN", (0,0), (-1,-1), "TOP"),
+        ("BOTTOMPADDING", (0,0), (-1,-1), 12),
+        ("ALIGN", (2,0), (2,0), "RIGHT"),
+    ]))
+
+    story.append(table)
+    story.append(Spacer(1, 6))
+
+
+# ---------------------------------------------------------
+# SEPARADOR AZUL
+# ---------------------------------------------------------
+
+def build_separator(story, color):
+    story.append(Spacer(1, 4))
+    line = Table(
+        [[""]],
+        colWidths=[19*cm],
+        rowHeights=[6],
+    )
+    line.setStyle(TableStyle([
+        ("BACKGROUND", (0,0), (-1,-1), color),
+    ]))
+    story.append(line)
+    story.append(Spacer(1, 8))
+
+
+# ---------------------------------------------------------
+# CLIENTE
+# ---------------------------------------------------------
+
+def build_client_block(story, doc, styles: ModernStyles):
+    story.append(Paragraph("FACTURAR A", styles.client_label))
+    story.append(Spacer(1, 2))
+
+    story.append(Paragraph(doc.get("client_name","Cliente"), styles.client_name))
+    story.append(Paragraph(f'RNC/Cédula: {doc.get("client_rnc","")}', styles.meta_label))
+
+    addr = doc.get("client_address","")
+    if addr:
+        story.append(Paragraph(addr, styles.meta_label))
+
+    story.append(Spacer(1, 10))
+
+
+# ---------------------------------------------------------
+# TABLA DE ITEMS
+# ---------------------------------------------------------
+
+def build_items_table(story, doc, styles: ModernStyles, primary_color):
+    items = doc.get("items", [])
+    headers = ["Descripción", "Cant.", "Unidad", "Precio", "Importe"]
+
+    header_cells = [Paragraph(h, styles.table_header) for h in headers]
+    data = [header_cells]
+
+    for it in items:
+        qty = float(it.get("quantity", 0))
+        up = float(it.get("unit_price", 0))
+        total = qty * up
+
+        code = it.get("code","")
+        desc = it.get("description","")
+
+        desc_par = Paragraph(
+            f'<font size="7" color="#777777">{code}</font><br/><b>{desc}</b>',
+            styles.table_cell
+        )
+
+        row = [
+            desc_par,
+            Paragraph(f"{qty:.2f}", styles.table_cell),
+            Paragraph(it.get("unit",""), styles.table_cell),
+            Paragraph(f"{up:,.2f}", styles.table_cell_right),
+            Paragraph(f"{total:,.2f}", styles.table_cell_right),
+        ]
+        data.append(row)
+
+    t = Table(
+        data,
+        colWidths=[9*cm, 2*cm, 2*cm, 3*cm, 3*cm]
+    )
+    t.setStyle(TableStyle([
+        ("BACKGROUND", (0,0), (-1,0), primary_color),
+        ("TEXTCOLOR", (0,0), (-1,0), colors.white),
+        ("GRID", (0,0), (-1,-1), 0.25, colors.lightgrey),
+        ("ALIGN", (1,1), (4,-1), "CENTER"),
+        ("ALIGN", (3,1), (4,-1), "RIGHT"),
+        ("ROWBACKGROUNDS", (0,1), (-1,-1), [colors.whitesmoke, colors.lightgrey]),
+        ("VALIGN", (0,0), (-1,-1), "TOP"),
+    ]))
+
+    story.append(t)
+    story.append(Spacer(1, 15))
+
+
+# ---------------------------------------------------------
+# NOTAS Y FIRMA
+# ---------------------------------------------------------
+
+def build_notes_and_signature(story, comp, styles: ModernStyles):
+    story.append(Paragraph("Notas / Términos", styles.client_label))
+
+    notes_box = Table(
+        [[Paragraph(
+            "El pago debe realizarse dentro del plazo acordado.<br/>"
+            "Precios sujetos a cambio sin previo aviso.",
+            styles.meta_label
+        )]],
+        colWidths=[12*cm],
+    )
+    notes_box.setStyle(TableStyle([
+        ("BACKGROUND", (0,0), (-1,-1), styles.secondary),
+        ("BOX", (0,0), (-1,-1), 0.5, styles.muted),
+        ("PADDING", (0,0), (-1,-1), 6),
+    ]))
+
+    story.append(notes_box)
+    story.append(Spacer(1, 20))
+
+    firma = comp.get("signature_name","Firma Autorizada")
+
+    tabla_firma = Table([
+        ["__________________________", "__________________________"],
+        [firma, "Recibido por el Cliente"]
+    ], colWidths=[8*cm, 8*cm])
+
+    tabla_firma.setStyle(TableStyle([
+        ("ALIGN", (0,0), (-1,-1), "CENTER"),
+    ]))
+
+    story.append(tabla_firma)
+    story.append(Spacer(1, 20))
+
+
+# ---------------------------------------------------------
+# TOTALES
+# ---------------------------------------------------------
+
+def build_totals(story, doc, styles: ModernStyles, primary_color):
+    subtotal = doc.get("subtotal", 0.0)
+    itbis = doc.get("itbis", 0.0)
+    total = doc.get("total_amount", subtotal + itbis)
+    currency = doc.get("currency","RD$")
+
+    rows = [
+        ["", "Subtotal:", f"{currency} {subtotal:,.2f}"]
+    ]
+
+    if doc.get("apply_itbis", True):
+        rate = doc.get("itbis_rate", 0.18)
+        rows.append(["", f"ITBIS ({rate*100:.0f}%):", f"{currency} {itbis:,.2f}"])
+
+    t = Table(rows, colWidths=[10*cm, 4*cm, 4*cm])
+    t.setStyle(TableStyle([
+        ("ALIGN", (1,0), (-1,-1), "RIGHT"),
+        ("TEXTCOLOR", (1,0), (-1,-1), styles.text),
+    ]))
+
+    story.append(t)
+    story.append(Spacer(1, 10))
+
+    total_box = Table(
+        [[Paragraph("<b>TOTAL A PAGAR</b>", styles.table_header),
+          Paragraph(f"{currency} {total:,.2f}", styles.table_header)]],
+        colWidths=[8*cm, 6*cm]
+    )
+    total_box.setStyle(TableStyle([
+        ("BACKGROUND", (0,0), (-1,-1), primary_color),
+        ("TEXTCOLOR", (0,0), (-1,-1), colors.white),
+        ("ALIGN", (1,0), (1,0), "RIGHT"),
+        ("PADDING", (0,0), (-1,-1), 8),
+    ]))
+
+    story.append(total_box)
+    story.append(Spacer(1, 20))
+
+
+# ---------------------------------------------------------
+# FOOTER
+# ---------------------------------------------------------
+
+def build_footer(story, comp, styles: ModernStyles):
+    website = comp.get("website","")
+    msg = "Documento generado electrónicamente."
+    if website:
+        msg += f" Visítenos en {website}"
+
+    p = Paragraph(msg, ParagraphStyle(
+        "Footer",
+        fontSize=8,
+        alignment=TA_CENTER,
+        textColor=styles.muted,
+    ))
+
+    story.append(p)
+
+
+# ---------------------------------------------------------
+# CLASE PRINCIPAL
+# ---------------------------------------------------------
+
+class PDFGeneratorModern:
+    """Generador PDF principal."""
+
+    def generate(self, payload: Dict[str, Any], dest: str):
+        comp = payload.get("COMPANY", {})
+        tpl = payload.get("TEMPLATE", {})
+        doc = payload.get("QUOTATION") or payload.get("INVOICE") or {}
+
+        primary_color = _normalize_primary_color(comp, tpl)
+        styles = ModernStyles(primary_color)
+
+        pdf = SimpleDocTemplate(
+            dest,
+            pagesize=LETTER,
+            rightMargin=20*mm,
+            leftMargin=20*mm,
+            topMargin=20*mm,
+            bottomMargin=20*mm,
+        )
+
+        story = []
+        page_width = LETTER[0] - 40*mm   # ancho útil después de márgenes
+
+        build_header(story, comp, doc, styles, page_width)
+        build_separator(story, primary_color)
+        build_client_block(story, doc, styles)
+        build_items_table(story, doc, styles, primary_color)
+        build_notes_and_signature(story, comp, styles)
+        build_totals(story, doc, styles, primary_color)
+        build_footer(story, comp, styles)
+
+        pdf.build(story)

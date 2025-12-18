@@ -1,0 +1,11 @@
+{
+  "db_path": "D:/Dropbox/PROGAIN/FACOT_GIT/FACOT_GIT/facturas_db.db",
+  "output_folder": "C:\\Users\\servi\\AppData\\Roaming\\FACOT\\output",
+  "downloads_folder_path": "C:\\Users\\servi\\AppData\\Roaming\\FACOT\\import",
+  "connection_mode": "FIREBASE",
+  "firebase": {
+    "credentials_path": "D:/Dropbox/PROGAIN/FACOT/firebase_credentials.json",
+    "storage_bucket": "facot-app.firebasestorage.app"
+  },
+  "theme": "midnight"
+}

@@ -1,0 +1,188 @@
+/* --- GLOBAL --- */
+QWidget {
+    background-color: {{background}};
+    color: {{foreground}};
+    font-family: "Segoe UI", "Roboto", "Helvetica Neue", sans-serif;
+    font-size: 14px;
+}
+
+/* --- HEADINGS & LABELS --- */
+QLabel {
+    color: {{foreground}};
+}
+QLabel[class="heading"] {
+    font-size: 18px;
+    font-weight: bold;
+    color: {{primary}};
+    margin-bottom: 8px;
+}
+QLabel[class="subheading"] {
+    color: {{foreground_muted}};
+    font-weight: 600;
+}
+
+/* --- GROUP BOX (Estilo Tarjeta con Título Interno) --- */
+QGroupBox {
+    background-color: {{surface}};
+    border: 1px solid {{border}};
+    border-radius: 8px;
+    
+    /* Margen EXTERNO (separación con otros elementos de arriba) */
+    margin-top: 10px;
+    
+    /* Padding INTERNO SUPERIOR grande para dejar sitio al título */
+    padding-top: 35px; 
+    padding-left: 15px;
+    padding-right: 15px;
+    padding-bottom: 15px;
+
+    font-weight: bold;
+    color: {{primary}};
+}
+
+QGroupBox::title {
+    /* CLAVE: 'padding' coloca el título DENTRO del borde, no encima */
+    subcontrol-origin: padding;
+    subcontrol-position: top left;
+    
+    /* Ajustamos la posición para que quede en la esquina superior izquierda interna */
+    top: 10px;
+    left: 10px;
+    
+    /* Al estar dentro, ya puede ser transparente y tomará el color de {{surface}} */
+    background-color: transparent;
+    color: {{primary}};
+    padding: 0px;
+}
+
+/* --- INPUTS --- */
+QLineEdit, QComboBox, QDateEdit, QSpinBox, QDoubleSpinBox {
+    background-color: {{surface_alt}};
+    border: 1px solid {{border}};
+    border-radius: 6px;
+    padding: 6px 12px;
+    min-height: 24px;
+    color: {{foreground}};
+    selection-background-color: {{selection_bg}};
+    selection-color: {{selection_text}};
+}
+QLineEdit:focus, QComboBox:focus, QDateEdit:focus {
+    border: 2px solid {{primary}};
+    background-color: {{surface}};
+}
+QComboBox::drop-down {
+    border: none;
+    background: transparent;
+    width: 20px;
+}
+
+/* --- BUTTONS --- */
+QPushButton {
+    background-color: {{surface}};
+    border: 1px solid {{border}};
+    border-radius: 6px;
+    padding: 8px 16px;
+    color: {{foreground}};
+    font-weight: 600;
+}
+QPushButton:hover {
+    background-color: {{surface_alt}};
+    border-color: {{primary_hover}};
+}
+QPushButton:pressed {
+    background-color: {{border}};
+}
+
+/* Primary Action Button (Guardar, etc) */
+QPushButton[class="primary"] {
+    background-color: {{primary}};
+    color: {{primary_text}};
+    border: 1px solid {{primary}};
+}
+QPushButton[class="primary"]:hover {
+    background-color: {{primary_hover}};
+    border-color: {{primary_hover}};
+}
+
+/* Action Icon Button (Tablas) */
+QPushButton#actionButton {
+    background-color: transparent;
+    border: none;
+    border-radius: 4px;
+    padding: 4px;
+}
+QPushButton#actionButton:hover {
+    background-color: {{selection_bg}};
+}
+
+/* --- TABLES --- */
+QTableWidget {
+    background-color: {{surface}};
+    alternate-background-color: {{surface_alt}};
+    gridline-color: {{table_grid}};
+    border: 1px solid {{border}};
+    border-radius: 6px;
+    selection-background-color: {{selection_bg}};
+    selection-color: {{selection_text}};
+}
+QHeaderView::section {
+    background-color: {{table_header_bg}};
+    color: {{foreground_muted}};
+    padding: 8px 12px;
+    border: none;
+    border-bottom: 2px solid {{border}};
+    font-weight: bold;
+    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: 0.5px;
+}
+QTableWidget::item {
+    padding: 6px;
+}
+
+/* --- TABS --- */
+QTabWidget::pane {
+    border: 1px solid {{border}};
+    border-radius: 6px;
+    background-color: {{surface}};
+    top: -1px; 
+}
+QTabBar::tab {
+    background: {{background}};
+    color: {{foreground_muted}};
+    padding: 10px 24px;
+    margin-right: 4px;
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+    border: 1px solid transparent;
+    font-weight: 600;
+}
+QTabBar::tab:selected {
+    background: {{surface}};
+    color: {{primary}};
+    border: 1px solid {{border}};
+    border-bottom: 1px solid {{surface}}; /* Blend with pane */
+}
+QTabBar::tab:hover:!selected {
+    background: {{surface_alt}};
+    color: {{foreground}};
+}
+
+/* --- SCROLLBARS (Modern) --- */
+QScrollBar:vertical {
+    border: none;
+    background: {{background}};
+    width: 10px;
+    margin: 0px;
+}
+QScrollBar::handle:vertical {
+    background: {{border}};
+    min-height: 20px;
+    border-radius: 5px;
+}
+QScrollBar::handle:vertical:hover {
+    background: {{foreground_muted}};
+}
+QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+    height: 0px;
+}

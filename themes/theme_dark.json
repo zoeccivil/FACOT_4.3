@@ -1,0 +1,19 @@
+{
+  "id": "dark",
+  "name": "Dark Focus",
+  "palette": {
+    "background": "#1E1E2E",
+    "surface": "#252538",
+    "surface_alt": "#181825",
+    "foreground": "#CDD6F4",
+    "foreground_muted": "#A6ADC8",
+    "primary": "#89B4FA",
+    "primary_hover": "#74C7EC",
+    "primary_text": "#1E1E2E",
+    "border": "#313244",
+    "table_header_bg": "#181825",
+    "table_grid": "#313244",
+    "selection_bg": "#45475A",
+    "selection_text": "#FFFFFF"
+  }
+}
