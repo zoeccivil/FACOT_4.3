@@ -7,5 +7,5 @@
     "credentials_path": "D:/Dropbox/PROGAIN/FACOT/firebase_credentials.json",
     "storage_bucket": "facot-app.firebasestorage.app"
   },
-  "theme": "light"
+  "theme": "facot-professional"
 }

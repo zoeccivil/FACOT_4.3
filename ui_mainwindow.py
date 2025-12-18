@@ -41,22 +41,9 @@ from widgets.connection_status_bar import ConnectionStatusBar
 
 # -*- coding: utf-8 -*-
 
-# Color palette (matching React/Tailwind reference)
-COLORS = {
-    "sidebar_bg": "#0f172a",      # slate-900
-    "sidebar_text": "#94a3b8",    # slate-400
-    "sidebar_text_active": "#ffffff",
-    "sidebar_hover": "#1e293b",   # slate-800
-    "background": "#f8fafc",      # slate-50
-    "primary": "#4f46e5",         # indigo-600
-    "primary_hover": "#4338ca",   # indigo-700
-    "header_bg": "#ffffff",
-    "header_border": "#e2e8f0",   # slate-200
-    "text_main": "#1e293b",       # slate-800
-    "text_muted": "#64748b",      # slate-500
-    "card_bg": "#ffffff",
-    "card_border": "#e2e8f0",
-}
+# Import color palette from global stylesheet
+from styles.global_stylesheet import COLORS
+
 
 class HybridLogicWrapper:
     """
@@ -299,8 +286,7 @@ class MainWindow(QMainWindow):
         - Left Sidebar (navigation)
         - Right Main Content (Header + QStackedWidget)
         """
-        # Apply global stylesheet
-        self._apply_global_stylesheet()
+        # Global stylesheet is now applied in main.py
         
         # Central widget with horizontal layout
         central = QWidget()
@@ -531,93 +517,6 @@ class MainWindow(QMainWindow):
         if 0 <= page_index < len(titles):
             self.page_title.setText(titles[page_index])
     
-    def _apply_global_stylesheet(self):
-        """Apply global styles to the application."""
-        self.setStyleSheet(f"""
-            /* Main Window Background */
-            QMainWindow {{
-                background-color: {COLORS['background']};
-            }}
-            
-            /* Content Area */
-            QWidget#contentArea {{
-                background-color: {COLORS['background']};
-            }}
-            
-            /* Content Stack */
-            QStackedWidget#contentStack {{
-                background-color: {COLORS['background']};
-            }}
-            
-            /* Card Style */
-            QFrame.Card, QGroupBox {{
-                background-color: {COLORS['card_bg']};
-                border: 1px solid {COLORS['card_border']};
-                border-radius: 12px;
-            }}
-            
-            /* Primary Button */
-            QPushButton[class="primary"] {{
-                background-color: {COLORS['primary']};
-                color: white;
-                border: none;
-                border-radius: 6px;
-                padding: 8px 16px;
-                font-weight: 600;
-            }}
-            QPushButton[class="primary"]:hover {{
-                background-color: {COLORS['primary_hover']};
-            }}
-            
-            /* Default Input Styling */
-            QLineEdit, QTextEdit, QDateEdit, QSpinBox, QDoubleSpinBox {{
-                background-color: white;
-                border: 1px solid {COLORS['card_border']};
-                border-radius: 6px;
-                padding: 6px 12px;
-                color: {COLORS['text_main']};
-            }}
-            QLineEdit:focus, QTextEdit:focus, QDateEdit:focus {{
-                border-color: {COLORS['primary']};
-            }}
-            
-            /* Table Styling */
-            QTableWidget {{
-                background-color: white;
-                border: 1px solid {COLORS['card_border']};
-                border-radius: 8px;
-                gridline-color: {COLORS['header_border']};
-            }}
-            QHeaderView::section {{
-                background-color: {COLORS['background']};
-                color: {COLORS['text_muted']};
-                padding: 10px;
-                border: none;
-                border-bottom: 1px solid {COLORS['header_border']};
-                font-weight: bold;
-                font-size: 11px;
-                text-transform: uppercase;
-            }}
-            
-            /* Scrollbar */
-            QScrollBar:vertical {{
-                background: {COLORS['background']};
-                width: 8px;
-                margin: 0;
-                border-radius: 4px;
-            }}
-            QScrollBar::handle:vertical {{
-                background: {COLORS['header_border']};
-                border-radius: 4px;
-                min-height: 20px;
-            }}
-            QScrollBar::handle:vertical:hover {{
-                background: {COLORS['text_muted']};
-            }}
-            QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {{
-                height: 0;
-            }}
-        """)
 
     def _setup_menu(self):
         menu_bar = QMenuBar(self); self.setMenuBar(menu_bar)
