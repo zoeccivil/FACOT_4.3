@@ -40,13 +40,6 @@ def _ensure_facot_config_loaded(app: QApplication) -> None:
     except Exception:
         pass
 
-def _apply_safe_menu_styles(app: QApplication) -> None:
-    """Estilos adicionales de menú si son necesarios."""
-    # Ya están incluidos en GLOBAL_STYLESHEET
-    pass
-
-
-
 
 def main():
     app = QApplication.instance() or QApplication(sys.argv)

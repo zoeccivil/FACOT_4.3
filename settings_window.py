@@ -90,13 +90,14 @@ class SettingsWindow(QDialog):
         self.theme_selector.setMinimumWidth(300)
 
         # FACOT Professional theme is now the only theme (applied globally in main.py)
-        # Keeping selector for future multi-theme support
+        # TODO: Re-enable multi-theme support in future versions if needed
         try:
             # Add FACOT Professional theme
             self.theme_selector.addItem("FACOT Professional", "facot-professional")
             self.theme_selector.setCurrentIndex(0)
             
             # Disable selector since we only have one theme now
+            # TODO: Enable when additional themes are added
             self.theme_selector.setEnabled(False)
             
             # Note: Theme changes will require app restart to take effect

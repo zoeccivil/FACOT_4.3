@@ -287,7 +287,7 @@ QLabel[class="badge-error"] {
 
 /* NCF Styling (Números de Comprobante Fiscal) */
 QLabel[class="ncf"], QLineEdit[class="ncf"] {
-    font-family: 'Courier New', 'JetBrains Mono', monospace;
+    font-family: 'Courier New', monospace, 'JetBrains Mono';
     color: #2563eb;
     font-weight: bold;
 }

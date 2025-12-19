@@ -285,8 +285,10 @@ class MainWindow(QMainWindow):
         Build the modern dashboard-style UI with:
         - Left Sidebar (navigation)
         - Right Main Content (Header + QStackedWidget)
+        
+        Note: Global stylesheet is now applied once in main.py for consistency
+        across the entire application, rather than per-window.
         """
-        # Global stylesheet is now applied in main.py
         
         # Central widget with horizontal layout
         central = QWidget()
