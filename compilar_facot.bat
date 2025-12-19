@@ -72,7 +72,7 @@ if errorlevel 1 (
     echo       PyInstaller instalado
 ) else (
     echo       PyInstaller ya instalado
-    echo       Actualizando a la ultima version...
+    echo       Actualizando a la última versión...
     py -3.12 -m pip install --upgrade pyinstaller --quiet
 )
 echo.
@@ -185,11 +185,10 @@ echo.
 
 REM Obtener tamaño del archivo
 for %%A in (dist\FACOT.exe) do (
-    set SIZE=%%~zA
     set /a SIZE_MB=%%~zA/1048576
 )
 
-echo       Tamano: %SIZE_MB% MB
+echo       Tamaño: %SIZE_MB% MB
 echo.
 
 REM ==========================================
@@ -200,7 +199,7 @@ echo  COMPILACION EXITOSA
 echo ========================================
 echo.
 echo Ejecutable:  dist\FACOT.exe
-echo Tamano:      %SIZE_MB% MB
+echo Tamaño:      %SIZE_MB% MB
 echo.
 echo El ejecutable incluye:
 echo   - Tema FACOT Professional
