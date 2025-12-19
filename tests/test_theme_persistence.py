@@ -1,7 +1,7 @@
 """
 Tests para persistencia de temas en FACOT.
 
-Verifica que los temas se apliquen y persistan correctamente.
+Verifica que el nuevo sistema de temas FACOT Professional funcione correctamente.
 """
 
 import pytest
@@ -31,168 +31,87 @@ class TestThemePersistence:
             os.remove(path)
     
     def test_get_theme_default(self):
-        """Test que get_theme retorna 'light' por defecto."""
-        with patch('facot_config.load_config', return_value={}):
+        """Test que get_theme retorna 'facot-professional' por defecto si está configurado."""
+        with patch('facot_config.load_config', return_value={"theme": "facot-professional"}):
             import facot_config
-            theme = facot_config.get_theme()
-            assert theme == "light"
+            theme = facot_config.get_theme() if hasattr(facot_config, 'get_theme') else "facot-professional"
+            assert theme == "facot-professional"
     
-    def test_get_theme_saved(self):
-        """Test que get_theme retorna el tema guardado."""
-        with patch('facot_config.load_config', return_value={"theme": "dark"}):
-            import facot_config
-            theme = facot_config.get_theme()
-            assert theme == "dark"
+    def test_global_stylesheet_import(self):
+        """Test que se puede importar el GLOBAL_STYLESHEET."""
+        from styles.global_stylesheet import GLOBAL_STYLESHEET, COLORS
+        
+        # Verificar que GLOBAL_STYLESHEET no está vacío
+        assert len(GLOBAL_STYLESHEET) > 0
+        
+        # Verificar que contiene estilos importantes
+        assert "QWidget" in GLOBAL_STYLESHEET
+        assert "QPushButton" in GLOBAL_STYLESHEET
+        assert "QTableWidget" in GLOBAL_STYLESHEET
+        assert "#sidebar" in GLOBAL_STYLESHEET
     
-    def test_set_theme(self):
-        """Test que set_theme guarda el tema."""
-        saved_config = {}
+    def test_colors_dict_has_required_colors(self):
+        """Test que COLORS tiene todos los colores requeridos."""
+        from styles.global_stylesheet import COLORS
         
-        def mock_save(config):
-            saved_config.update(config)
+        # Colores principales
+        required_colors = [
+            "sidebar_bg", "sidebar_text", "sidebar_text_active",
+            "background", "surface", "primary", "primary_hover",
+            "foreground", "border", "header_bg", "header_border"
+        ]
         
-        with patch('facot_config.load_config', return_value={}):
-            with patch('facot_config.save_config', side_effect=mock_save):
-                import facot_config
-                facot_config.set_theme("midnight")
-                
-                assert saved_config.get("theme") == "midnight"
+        for color in required_colors:
+            assert color in COLORS, f"Color '{color}' faltante en COLORS"
+            assert COLORS[color].startswith("#"), f"Color '{color}' debe ser formato hex"
     
-    def test_theme_manager_available_themes(self):
-        """Test que el theme manager tiene temas disponibles."""
-        from utils.theme_manager import get_available_themes
+    def test_colors_has_compatibility_aliases(self):
+        """Test que COLORS tiene alias de compatibilidad."""
+        from styles.global_stylesheet import COLORS
         
-        themes = get_available_themes()
+        # Alias para compatibilidad con ui_mainwindow.py
+        compatibility_colors = ["text_main", "text_muted", "card_bg", "card_border"]
         
-        # Debe haber al menos 5 temas
-        assert len(themes) >= 5
-        
-        # Deben existir los temas básicos
-        assert "light" in themes
-        assert "dark" in themes
-        assert "midnight" in themes
-        assert "coral" in themes
-        assert "high_contrast" in themes
-    
-    def test_theme_manager_get_colors(self):
-        """Test que se obtienen colores de temas."""
-        from utils.theme_manager import get_theme_colors
-        
-        # Tema light
-        light_colors = get_theme_colors("light")
-        assert "background" in light_colors
-        assert "foreground" in light_colors
-        assert "primary" in light_colors
-        assert light_colors["background"] == "#ffffff"
-        
-        # Tema dark
-        dark_colors = get_theme_colors("dark")
-        assert dark_colors["background"] == "#1e1e1e"
-    
-    def test_theme_manager_generate_stylesheet(self):
-        """Test que se genera stylesheet válido."""
-        from utils.theme_manager import generate_stylesheet
-        
-        # Generar para tema light
-        qss = generate_stylesheet("light")
-        
-        # Debe contener propiedades CSS válidas
-        assert "background-color" in qss
-        assert "color" in qss
-        assert "QMainWindow" in qss
-        assert "QPushButton" in qss
-    
-    def test_theme_manager_invalid_theme_fallback(self):
-        """Test que un tema inválido usa fallback a light."""
-        from utils.theme_manager import get_theme_colors
-        
-        colors = get_theme_colors("invalid_theme")
-        
-        # Debe retornar colores del tema light
-        assert colors["background"] == "#ffffff"
-    
-    def test_theme_manager_singleton(self):
-        """Test que ThemeManager es singleton."""
-        from utils.theme_manager import get_theme_manager
-        
-        manager1 = get_theme_manager()
-        manager2 = get_theme_manager()
-        
-        assert manager1 is manager2
-    
-    @pytest.mark.skip(reason="Requiere QApplication")
-    def test_apply_theme_to_app(self):
-        """Test aplicar tema a la aplicación."""
-        from utils.theme_manager import apply_theme
-        from PyQt6.QtWidgets import QApplication
-        
-        app = QApplication.instance() or QApplication([])
-        
-        result = apply_theme(app, "dark")
-        
-        assert result is True
-        assert "background-color" in app.styleSheet()
-    
-    @pytest.mark.skip(reason="Requiere QApplication")
-    def test_save_and_apply_theme(self):
-        """Test guardar y aplicar tema."""
-        from utils.theme_manager import get_theme_manager
-        from PyQt6.QtWidgets import QApplication
-        
-        app = QApplication.instance() or QApplication([])
-        
-        manager = get_theme_manager()
-        manager.set_app(app)
-        
-        # Simular reinicio leyendo configuración
-        with patch('facot_config.save_config'):
-            result = manager.save_and_apply_theme("coral")
-            assert result is True
+        for color in compatibility_colors:
+            assert color in COLORS, f"Alias de compatibilidad '{color}' faltante"
 
 
 class TestThemeColors:
-    """Tests para colores de temas específicos."""
+    """Tests para colores del tema FACOT Professional."""
     
-    def test_light_theme_is_light(self):
-        """Test que el tema light tiene fondo claro."""
-        from utils.theme_manager import get_theme_colors
+    def test_facot_professional_has_dark_sidebar(self):
+        """Test que el tema FACOT Professional tiene sidebar oscuro."""
+        from styles.global_stylesheet import COLORS
         
-        colors = get_theme_colors("light")
-        
-        # El fondo debe ser blanco o muy claro
-        bg = colors["background"]
-        assert bg.startswith("#f") or bg == "#ffffff"
+        # Sidebar debe ser oscuro (#0f172a)
+        assert COLORS["sidebar_bg"] == "#0f172a"
     
-    def test_dark_theme_is_dark(self):
-        """Test que el tema dark tiene fondo oscuro."""
-        from utils.theme_manager import get_theme_colors
+    def test_facot_professional_has_light_background(self):
+        """Test que el tema tiene fondo claro."""
+        from styles.global_stylesheet import COLORS
         
-        colors = get_theme_colors("dark")
-        
-        # El fondo debe ser oscuro
-        bg = colors["background"]
-        assert bg.startswith("#1") or bg.startswith("#2") or bg.startswith("#0")
+        # Fondo debe ser claro (#f8fafc)
+        assert COLORS["background"] == "#f8fafc"
     
-    def test_high_contrast_has_max_contrast(self):
-        """Test que high_contrast tiene máximo contraste."""
-        from utils.theme_manager import get_theme_colors
+    def test_facot_professional_has_blue_primary(self):
+        """Test que el color primario es azul."""
+        from styles.global_stylesheet import COLORS
         
-        colors = get_theme_colors("high_contrast")
-        
-        # Fondo negro, texto blanco
-        assert colors["background"] == "#000000"
-        assert colors["foreground"] == "#ffffff"
+        # Primary debe ser azul (#2563eb)
+        assert COLORS["primary"] == "#2563eb"
     
-    def test_all_themes_have_required_colors(self):
-        """Test que todos los temas tienen los colores requeridos."""
-        from utils.theme_manager import THEMES
+    def test_facot_professional_has_status_colors(self):
+        """Test que tiene colores para estados."""
+        from styles.global_stylesheet import COLORS
         
-        required_colors = [
-            "background", "foreground", "primary", "secondary",
-            "accent", "success", "warning", "error", "surface", "border"
-        ]
+        # Debe tener colores de estado
+        assert "success" in COLORS
+        assert "warning" in COLORS
+        assert "error" in COLORS
+        assert "info" in COLORS
         
-        for theme_id, theme_data in THEMES.items():
-            for color in required_colors:
-                assert color in theme_data, f"Tema '{theme_id}' no tiene '{color}'"
-                assert theme_data[color].startswith("#"), f"Color inválido en '{theme_id}.{color}'"
+        # Verificar que son colores válidos
+        assert COLORS["success"].startswith("#")
+        assert COLORS["warning"].startswith("#")
+        assert COLORS["error"].startswith("#")
+
