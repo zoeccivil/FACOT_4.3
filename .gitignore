@@ -40,7 +40,6 @@ Thumbs.db
 *.db-journal
 *.log
 debug_*.html
-facot_config.json
 
 # Temporary
 /tmp/
