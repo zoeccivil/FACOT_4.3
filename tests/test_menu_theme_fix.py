@@ -1,8 +1,8 @@
 """
 Tests for menu styling and theme application in packaged builds.
 
-Verifies that menu styles are readable in both light and dark themes
-and that the theme manager integration works correctly.
+Verifies that the FACOT Professional theme includes proper menu styles
+and that the global stylesheet is applied correctly.
 """
 
 import pytest
@@ -10,183 +10,98 @@ from unittest.mock import MagicMock, patch
 
 
 class TestMenuStyling:
-    """Tests for menu bar and menu styling."""
+    """Tests for menu bar and menu styling in FACOT Professional theme."""
     
-    def test_apply_safe_menu_styles_light_theme(self):
-        """Test that light theme menu styles are applied correctly."""
+    def test_apply_safe_menu_styles_is_noop(self):
+        """Test that _apply_safe_menu_styles is now a no-op (menu styles in global stylesheet)."""
         from main import _apply_safe_menu_styles
         
         # Mock QApplication
         mock_app = MagicMock()
-        mock_app.styleSheet.return_value = ""
         
-        # Apply light theme menu styles
-        _apply_safe_menu_styles(mock_app, "light")
+        # Apply menu styles - should do nothing now
+        _apply_safe_menu_styles(mock_app)
         
-        # Verify Fusion style was set
-        mock_app.setStyle.assert_called_once_with("Fusion")
-        
-        # Verify stylesheet was set
-        mock_app.setStyleSheet.assert_called()
-        
-        # Get the stylesheet that was applied
-        call_args = mock_app.setStyleSheet.call_args
-        stylesheet = call_args[0][0]
+        # Should not set style or stylesheet (it's a pass function now)
+        mock_app.setStyle.assert_not_called()
+        mock_app.setStyleSheet.assert_not_called()
+    
+    def test_global_stylesheet_has_menu_styles(self):
+        """Test that GLOBAL_STYLESHEET includes menu styles."""
+        from styles.global_stylesheet import GLOBAL_STYLESHEET
         
         # Verify menu styles are present
-        assert "QMenuBar" in stylesheet
-        assert "QMenu" in stylesheet
+        assert "QMenuBar" in GLOBAL_STYLESHEET
+        assert "QMenu" in GLOBAL_STYLESHEET
         
-        # Verify light theme colors
-        assert "#1e293b" in stylesheet  # dark text color
-        assert "#f8fafc" in stylesheet or "#ffffff" in stylesheet  # light background
+        # Verify menu styling properties
+        assert "background" in GLOBAL_STYLESHEET
+        assert "color" in GLOBAL_STYLESHEET
     
-    def test_apply_safe_menu_styles_dark_theme(self):
-        """Test that dark theme menu styles are applied correctly."""
-        from main import _apply_safe_menu_styles
+    def test_global_stylesheet_has_light_menu_colors(self):
+        """Test that GLOBAL_STYLESHEET uses light theme menu colors."""
+        from styles.global_stylesheet import GLOBAL_STYLESHEET
         
-        # Mock QApplication
-        mock_app = MagicMock()
-        mock_app.styleSheet.return_value = ""
-        
-        # Apply dark theme menu styles
-        _apply_safe_menu_styles(mock_app, "dark")
-        
-        # Get the stylesheet
-        call_args = mock_app.setStyleSheet.call_args
-        stylesheet = call_args[0][0]
-        
-        # Verify dark theme colors
-        assert "#1e293b" in stylesheet  # dark background
-        assert "#f1f5f9" in stylesheet  # light text color
-    
-    def test_apply_safe_menu_styles_midnight_theme(self):
-        """Test that midnight theme is recognized as dark."""
-        from main import _apply_safe_menu_styles
-        
-        # Mock QApplication
-        mock_app = MagicMock()
-        mock_app.styleSheet.return_value = ""
-        
-        # Apply midnight theme (should use dark styles)
-        _apply_safe_menu_styles(mock_app, "midnight")
-        
-        # Get the stylesheet
-        call_args = mock_app.setStyleSheet.call_args
-        stylesheet = call_args[0][0]
-        
-        # Should use dark theme colors
-        assert "#1e293b" in stylesheet
-        assert "#f1f5f9" in stylesheet
-    
-    def test_apply_safe_menu_styles_preserves_existing_stylesheet(self):
-        """Test that existing stylesheet is preserved when adding menu styles."""
-        from main import _apply_safe_menu_styles
-        
-        # Mock QApplication with existing stylesheet
-        mock_app = MagicMock()
-        existing_style = "QLabel { color: red; }"
-        mock_app.styleSheet.return_value = existing_style
-        
-        # Apply menu styles
-        _apply_safe_menu_styles(mock_app, "light")
-        
-        # Get the final stylesheet
-        call_args = mock_app.setStyleSheet.call_args
-        final_stylesheet = call_args[0][0]
-        
-        # Existing styles should be preserved
-        assert "QLabel { color: red; }" in final_stylesheet
-        # New menu styles should be added
-        assert "QMenuBar" in final_stylesheet
-    
-    def test_menu_styles_not_duplicated(self):
-        """Test that menu styles are not added if already present."""
-        from main import _apply_safe_menu_styles
-        
-        # Mock QApplication with existing menu styles
-        mock_app = MagicMock()
-        existing_style = "QMenuBar { background: blue; }"
-        mock_app.styleSheet.return_value = existing_style
-        
-        # Apply menu styles
-        _apply_safe_menu_styles(mock_app, "light")
-        
-        # setStyleSheet should not be called because menu styles already exist
-        # (only setStyle should be called)
-        assert mock_app.setStyle.called
-        # setStyleSheet might be called, but shouldn't duplicate QMenuBar rules
+        # Should have light background for menus
+        assert "#ffffff" in GLOBAL_STYLESHEET  # white background
+        assert "#0f172a" in GLOBAL_STYLESHEET  # dark text
 
 
 class TestTableStyling:
-    """Tests for table styling in themes."""
+    """Tests for table styling in FACOT Professional theme."""
     
     def test_table_items_have_background_color(self):
         """Test that table items have explicit background colors in stylesheet."""
-        from utils.theme_manager import generate_stylesheet
-        
-        # Generate light theme stylesheet
-        qss = generate_stylesheet("light")
+        from styles.global_stylesheet import GLOBAL_STYLESHEET
         
         # Should have table item styles
-        assert "QTableWidget::item" in qss or "QTableView::item" in qss
-        assert "background-color" in qss
+        assert "QTableWidget" in GLOBAL_STYLESHEET or "QTableView" in GLOBAL_STYLESHEET
+        assert "background-color" in GLOBAL_STYLESHEET
     
     def test_table_alternate_rows_styled(self):
         """Test that alternate rows have proper styling."""
-        from utils.theme_manager import generate_stylesheet
-        
-        # Generate stylesheet
-        qss = generate_stylesheet("light")
+        from styles.global_stylesheet import GLOBAL_STYLESHEET
         
         # Should have alternate row styling
-        assert "alternate" in qss.lower() or "QTableWidget::item:alternate" in qss
+        assert "alternate" in GLOBAL_STYLESHEET.lower()
     
     def test_table_selected_items_styled(self):
         """Test that selected table items have proper styling."""
-        from utils.theme_manager import generate_stylesheet
+        from styles.global_stylesheet import GLOBAL_STYLESHEET
         
-        # Generate stylesheet
-        qss = generate_stylesheet("light")
-        
-        # Should have selected item styling
-        assert "selected" in qss.lower()
+        # Should have selection styling
+        assert "selection-background-color" in GLOBAL_STYLESHEET or "selected" in GLOBAL_STYLESHEET.lower()
     
     def test_light_theme_table_not_black(self):
-        """Test that light theme tables don't have black backgrounds."""
-        from utils.theme_manager import generate_stylesheet
-        
-        # Generate light theme stylesheet
-        qss = generate_stylesheet("light")
+        """Test that tables don't have black backgrounds."""
+        from styles.global_stylesheet import GLOBAL_STYLESHEET
         
         # Check that table widgets have light colors defined
-        # Look for specific light color codes that should be present
-        assert "#FFFFFF" in qss or "#F8FAFC" in qss, "Light theme should contain white or light colors"
+        assert "#ffffff" in GLOBAL_STYLESHEET or "#f8fafc" in GLOBAL_STYLESHEET
         
-        # Ensure pure black is not used as a primary background color for tables
-        # (it might appear in borders or other contexts, but not as background-color: #000000)
-        assert "background-color: #000000" not in qss.lower(), "Light theme should not have pure black backgrounds"
+        # Ensure pure black is not used as a primary background color
+        assert "background-color: #000000" not in GLOBAL_STYLESHEET.lower()
 
 
 class TestThemeIntegration:
-    """Tests for theme manager integration in main.py."""
+    """Tests for theme integration in main.py."""
     
-    @pytest.mark.skip(reason="Requires QApplication and full main() flow")
-    def test_theme_applied_before_menu_styles(self):
-        """Test that theme is applied before safe menu styles."""
-        # This would require mocking the entire main() function flow
-        # and is better tested manually or in integration tests
-        pass
+    def test_global_stylesheet_can_be_imported_in_main(self):
+        """Test that GLOBAL_STYLESHEET can be imported from main.py."""
+        # This simulates what main.py does
+        try:
+            from styles.global_stylesheet import GLOBAL_STYLESHEET
+            assert len(GLOBAL_STYLESHEET) > 0
+            assert isinstance(GLOBAL_STYLESHEET, str)
+        except ImportError as e:
+            pytest.fail(f"Failed to import GLOBAL_STYLESHEET: {e}")
     
-    def test_theme_id_passed_to_menu_styles(self):
-        """Test that theme_id is correctly passed to _apply_safe_menu_styles."""
-        from main import _apply_safe_menu_styles
-        
-        mock_app = MagicMock()
-        mock_app.styleSheet.return_value = ""
-        
-        # Test with explicit theme IDs
-        for theme_id in ["light", "dark", "midnight", "coral"]:
-            mock_app.reset_mock()
-            _apply_safe_menu_styles(mock_app, theme_id)
-            assert mock_app.setStyle.called
+    def test_colors_can_be_imported(self):
+        """Test that COLORS dict can be imported."""
+        try:
+            from styles.global_stylesheet import COLORS
+            assert isinstance(COLORS, dict)
+            assert len(COLORS) > 0
+        except ImportError as e:
+            pytest.fail(f"Failed to import COLORS: {e}")
+

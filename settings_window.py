@@ -89,30 +89,19 @@ class SettingsWindow(QDialog):
         self.theme_selector = QComboBox()
         self.theme_selector.setMinimumWidth(300)
 
-        # Load available themes
+        # FACOT Professional theme is now the only theme (applied globally in main.py)
+        # TODO: Re-enable multi-theme support in future versions if needed
         try:
-            from utils.theme_manager import get_available_themes, get_theme_manager
-            self.theme_manager = get_theme_manager()
-            themes = get_available_themes()
-
-            # Add themes to combo
-            # Support dict or list
-            if isinstance(themes, dict):
-                for tid, tname in themes.items():
-                    self.theme_selector.addItem(tname, tid)
-            else:
-                for t in (themes or []):
-                    self.theme_selector.addItem(str(t), t)
-
-            # Select current theme if any
-            current_theme = self.theme_manager.load_saved_theme()
-            if current_theme:
-                for i in range(self.theme_selector.count()):
-                    if self.theme_selector.itemData(i) == current_theme:
-                        self.theme_selector.setCurrentIndex(i)
-                        break
-
-            # Connect change handler
+            # Add FACOT Professional theme
+            self.theme_selector.addItem("FACOT Professional", "facot-professional")
+            self.theme_selector.setCurrentIndex(0)
+            
+            # Disable selector since we only have one theme now
+            # TODO: Enable when additional themes are added
+            self.theme_selector.setEnabled(False)
+            
+            # Note: Theme changes will require app restart to take effect
+            # Connect change handler for future use
             self.theme_selector.currentIndexChanged.connect(self._on_theme_changed)
 
         except Exception as e:
@@ -286,19 +275,22 @@ class SettingsWindow(QDialog):
     # Event handlers / helpers
     # -------------------------
     def _on_theme_changed(self, index):
-        if not hasattr(self, 'theme_manager'):
-            return
-
+        # Theme is now applied globally in main.py
+        # Changes here would require app restart to take effect
         theme_id = self.theme_selector.itemData(index)
         if theme_id:
             try:
-                from PyQt6.QtWidgets import QApplication
-                app = QApplication.instance()
-                if app:
-                    self.theme_manager.apply_theme(app, theme_id)
-                    self.theme_manager.save_and_apply_theme(theme_id)
+                # Save theme preference to config for next app start
+                import facot_config
+                if hasattr(facot_config, 'set_theme'):
+                    facot_config.set_theme(theme_id)
+                    QMessageBox.information(
+                        self, 
+                        "Tema Actualizado", 
+                        "El tema se aplicará al reiniciar la aplicación."
+                    )
             except Exception as e:
-                QMessageBox.warning(self, "Error", f"Error al aplicar tema: {e}")
+                QMessageBox.warning(self, "Error", f"Error al guardar tema: {e}")
 
     def _load_companies(self):
         companies = []
@@ -426,11 +418,13 @@ class SettingsWindow(QDialog):
             self.attachments_edit.setText(folder)
 
     def _save_settings(self):
-        # Theme
+        # Theme - save preference for next app start
         try:
             theme_id = self.theme_selector.itemData(self.theme_selector.currentIndex())
-            if theme_id and hasattr(self, 'theme_manager'):
-                self.theme_manager.save_and_apply_theme(theme_id)
+            if theme_id:
+                import facot_config
+                if hasattr(facot_config, 'set_theme'):
+                    facot_config.set_theme(theme_id)
         except Exception:
             pass
 

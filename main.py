@@ -40,120 +40,6 @@ def _ensure_facot_config_loaded(app: QApplication) -> None:
     except Exception:
         pass
 
-def _apply_safe_menu_styles(app: QApplication, theme_id: str = "light") -> None:
-    """
-    Apply safe menu and menubar styles to ensure text is always readable.
-    Does NOT override the full palette - only adds menu-specific stylesheet.
-    Respects dark vs light theme.
-    """
-    try:
-        app.setStyle("Fusion")
-    except Exception:
-        pass
-
-    # Determine if this is a dark theme
-    is_dark = theme_id and ("dark" in theme_id.lower() or "midnight" in theme_id.lower())
-
-    if is_dark:
-        # Dark theme menu styles
-        menu_stylesheet = """
-        QMenuBar {
-            background: #1e293b;
-            color: #f1f5f9;
-            spacing: 6px;
-        }
-        QMenuBar::item {
-            background: transparent;
-            padding: 6px 12px;
-        }
-        QMenuBar::item:selected {
-            background: #334155;
-            color: #f1f5f9;
-        }
-        QMenuBar::item:pressed {
-            background: #475569;
-        }
-
-        QMenu {
-            background-color: #1e293b;
-            color: #f1f5f9;
-            border: 1px solid #475569;
-            padding: 6px;
-        }
-        QMenu::item {
-            padding: 6px 16px;
-            background: transparent;
-        }
-        QMenu::item:selected {
-            background: #334155;
-            color: #ffffff;
-        }
-        QMenu::separator {
-            height: 1px;
-            background: #475569;
-            margin: 4px 8px;
-        }
-
-        QMenu::item:disabled, QMenuBar::item:disabled {
-            color: #64748b;
-        }
-        """
-    else:
-        # Light theme menu styles
-        menu_stylesheet = """
-        QMenuBar {
-            background: #f8fafc;
-            color: #1e293b;
-            spacing: 6px;
-        }
-        QMenuBar::item {
-            background: transparent;
-            padding: 6px 12px;
-        }
-        QMenuBar::item:selected {
-            background: #e2e8f0;
-            color: #1e293b;
-        }
-        QMenuBar::item:pressed {
-            background: #cbd5e1;
-        }
-
-        QMenu {
-            background-color: #ffffff;
-            color: #1e293b;
-            border: 1px solid #e2e8f0;
-            padding: 6px;
-        }
-        QMenu::item {
-            padding: 6px 16px;
-            background: transparent;
-        }
-        QMenu::item:selected {
-            background: #f1f5f9;
-            color: #1e293b;
-        }
-        QMenu::separator {
-            height: 1px;
-            background: #e2e8f0;
-            margin: 4px 8px;
-        }
-
-        QMenu::item:disabled, QMenuBar::item:disabled {
-            color: #94a3b8;
-        }
-        """
-
-    # Get existing stylesheet and append menu styles
-    existing = app.styleSheet() or ""
-    # Use regex to check if QMenuBar styles already exist (more robust than simple string search)
-    import re
-    has_menubar_styles = bool(re.search(r'QMenuBar\s*\{', existing))
-    
-    if not has_menubar_styles:
-        app.setStyleSheet(existing + "\n" + menu_stylesheet)
-
-
-
 
 def main():
     app = QApplication.instance() or QApplication(sys.argv)
@@ -161,26 +47,17 @@ def main():
     _ensure_facot_config_loaded(app)
     import facot_config
 
-    # Tema
-    theme_to_apply = "light"  # default
+    # ==========================================
+    # APLICAR TEMA GLOBAL FACOT PROFESSIONAL
+    # ==========================================
     try:
-        from utils.theme_manager import get_theme_manager
-        tm = get_theme_manager()
-        tm.set_app(app)
-        saved_id = tm.load_saved_theme()
-        # Use saved theme if it exists and is not None or empty string
-        theme_to_apply = saved_id if (saved_id is not None and saved_id) else "light"
-        tm.apply_theme(app, theme_to_apply)
-        print(f"[THEME] Tema aplicado al inicio: {theme_to_apply}")
+        from styles.global_stylesheet import GLOBAL_STYLESHEET
+        app.setStyleSheet(GLOBAL_STYLESHEET)
+        print("[THEME] ✅ Tema FACOT Professional aplicado globalmente")
     except Exception as e:
-        print(f"[THEME] No se pudo aplicar tema al inicio: {e}")
-
-    # Paleta/estilos seguros para menú (soluciona texto blanco en exe)
-    # Aplica después del tema para no sobrescribir, solo agrega estilos de menú
-    try:
-        _apply_safe_menu_styles(app, theme_to_apply)
-    except Exception as e:
-        print(f"[THEME] No se pudo aplicar estilos seguros de menú: {e}")
+        print(f"[THEME] ❌ Error aplicando tema: {e}")
+        # Fallback: aplicar estilos básicos
+        app.setStyle("Fusion")
 
     # Recursos
     try:
